@@ -9,8 +9,8 @@ RUN apk update && \
   ln -s /usr/bin/pip3 /usr/bin/pip
 
 RUN mkdir -p /srv/app
-ADD . /srv/app/
-WORKDIR /srv/app/
+ADD . /srv/code/
+WORKDIR /srv/code/
 
 RUN pip install -r requirements.txt
 
