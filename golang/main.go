@@ -9,16 +9,16 @@ import (
 )
 
 var (
-	Version = "No Version Provided"
-	Date    = ""
-	GitHash = ""
+	version = "No Version Provided"
+	date    = ""
+	gitHash = ""
 )
 
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/v1/data", dataHandler)
 	mux.HandleFunc("/health", healthHandler)
-	log.Println("Starting JSON Jill Server")
+	log.Println("Starting Go API Server")
 	log.Fatal(http.ListenAndServe(":3000", mux))
 }
 
@@ -31,7 +31,7 @@ type data struct {
 // dataHandler returns data for GET requests to /v1/data
 func dataHandler(w http.ResponseWriter, req *http.Request) {
 	requestLogger(req)
-	versionString := fmt.Sprintf("GoAPI - %s (%s) %s", Version, GitHash, Date)
+	versionString := fmt.Sprintf("GoAPI - %s (%s) %s", version, gitHash, date)
 
 	data := data{
 		"Go API",
