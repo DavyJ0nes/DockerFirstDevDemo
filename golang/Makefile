@@ -33,7 +33,7 @@ test:
 	docker run --rm -it -v "$(CURDIR)":/go/src/app -w /go/src/app golang:${go_version} sh -c 'go test -v' 
 
 clean: 
-		@rm -f ${app} 
+	@rm -f ${app} 
 
 define blue
 	@tput setaf 4

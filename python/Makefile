@@ -16,7 +16,6 @@ run:
 	$(call blue, "# Running Code in Container...")
 	docker run --rm -it python:${py_version}-alpine3.6
 
-
 test:
 	$(call blue, "# Testing App Code...")
 	docker run -v $(CURDIR):/srv/code -w /srv/code python:${py_version}-alpine3.6 pip3 install -r requirements.txt && python app_test.py
