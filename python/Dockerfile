@@ -1,7 +1,7 @@
 FROM alpine:3.6
 LABEL Name=docker-first-python Version=0.0.1
-
-MAINTAINER DavyJ0nes <davy.jones@me.com>
+LABEL Author=DavyJ0nes
+LABEL Email=davy.jones@me.com
 
 RUN apk update && \
   apk add python3 && \
