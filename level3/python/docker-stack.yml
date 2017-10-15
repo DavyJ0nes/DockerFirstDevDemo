@@ -1,9 +1,9 @@
 version: '3'
 services:
   web:
-    image: level3_web
+    image: level3/python
     ports:
-      - "5000:5000"
+      - "8088:5000"
     volumes:
       - .:/code
   redis:
