@@ -17,7 +17,7 @@ git_hash = $(shell git rev-parse HEAD | cut -c 1-6)
 
 binary:
 	$(call blue, "# Building Golang Binary...")
-	docker run --rm -it -v "$(CURDIR)":/go/src/app -w /go/src/app golang:${go_version} sh -c 'go get && CGO_ENABLED=0 go build -a --installsuffix cgo --ldflags="-s -X main.version=${binary_version} -X main.gitHash=${git_hash} -X main.date=`date -u '+%Y-%m-%d_%I:%M:%S%p'`" -o ${app}'
+	docker run --rm -v "$(CURDIR)":/go/src/app -w /go/src/app golang:${go_version} sh -c 'go get && CGO_ENABLED=0 go build -a --installsuffix cgo --ldflags="-s -X main.version=${binary_version} -X main.gitHash=${git_hash} -X main.date=`date -u '+%Y-%m-%d_%I:%M:%S%p'`" -o ${app}'
 
 image: binary
 	$(call blue, "# Building Docker Image...")
