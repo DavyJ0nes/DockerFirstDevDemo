@@ -36,8 +36,8 @@ func indexHandler(w http.ResponseWriter, req *http.Request) {
 
 // data is simple struct used for JSON output of apiHandler
 type data struct {
-	Hostname string
-	Hitcount int
+	Hostname string `json:"hostname,omitempty"`
+	Hitcount int    `json:"hitcount,omitempty"`
 }
 
 // apiHandler returns JSON
