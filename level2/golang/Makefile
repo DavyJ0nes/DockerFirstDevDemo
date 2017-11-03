@@ -8,8 +8,8 @@ all: run
 # or to publish the :latest version to the specified registry as :1.0.0, run:
 # $ make publish version=1.0.0
 
-app = docker-first-demo
-binary_version = v0.0.2
+app = level2_go-api
+binary_version = v0.0.3
 version ?= latest
 local_port = 8081
 go_version ?= 1.8
@@ -21,7 +21,7 @@ binary:
 
 image: binary
 	$(call blue, "# Building Docker Image...")
-	docker build --no-cache -t ${app}-golang:${version} .
+	docker build --no-cache -t ${app}:${version} .
 	$(MAKE) clean
 
 run: image

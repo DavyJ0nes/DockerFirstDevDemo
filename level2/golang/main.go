@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
@@ -16,30 +15,29 @@ var (
 
 func main() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/v1/data", dataHandler)
-	mux.HandleFunc("/health", healthHandler)
-	log.Println("Starting Go API Server")
+	mux.HandleFunc("/v1/data", apiHandler)
+	mux.HandleFunc("/v1/version", versionHandler)
+	log.Println("Starting API Server")
 	log.Fatal(http.ListenAndServe(":3000", mux))
 }
 
+// data
 type data struct {
 	Name         string
 	RandomString string
-	Version      string
 }
 
 // dataHandler returns data for GET requests to /v1/data
-func dataHandler(w http.ResponseWriter, req *http.Request) {
+func apiHandler(w http.ResponseWriter, req *http.Request) {
 	requestLogger(req)
-	versionString := fmt.Sprintf("GoAPI - %s (%s) %s", version, gitHash, date)
+	// versionString := fmt.Sprintf("GoAPI - %s (%s) %s", version, gitHash, date)
 
-	data := data{
+	apiData := data{
 		"Go API",
 		generateRandomString(),
-		versionString,
 	}
 
-	js, err := json.Marshal(data)
+	js, err := json.Marshal(apiData)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -48,27 +46,29 @@ func dataHandler(w http.ResponseWriter, req *http.Request) {
 	w.Write(js)
 }
 
-type health struct {
-	Status  int
-	Message string
+// version
+type versionInfo struct {
+	Version   string
+	GitHash   string
+	BuildDate string
 }
 
-// healthHandler is used to check the health of the service.
-// Health endpoints can either look for a 200 request or specific data
-// Can also be extended in the future to be more dynamic. Showing performance data.
-func healthHandler(w http.ResponseWriter, req *http.Request) {
-	healthData := health{
-		Status:  1,
-		Message: "A OK",
+// versionHandler
+func versionHandler(w http.ResponseWriter, req *http.Request) {
+	requestLogger(req)
+	versionInfo := versionInfo{
+		version,
+		gitHash,
+		date,
 	}
 
-	status, err := json.Marshal(healthData)
+	js, err := json.Marshal(versionInfo)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(status)
+	w.Write(js)
 }
 
 // requestLogger is a helper function that prints request logging information.

@@ -4,17 +4,25 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 
 	"github.com/mediocregopher/radix.v2/redis"
 )
 
+var (
+	version = "No Version Provided"
+	date    = ""
+	gitHash = ""
+)
+
 func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/favicon.ico", http.NotFoundHandler())
-	mux.HandleFunc("/api", apiHandler)
 	mux.HandleFunc("/", indexHandler)
+	mux.HandleFunc("/v1/data", apiHandler)
+	mux.HandleFunc("/v1/version", versionHandler)
 	log.Println("Starting Server")
 	log.Fatal(http.ListenAndServe(":3000", mux))
 }
@@ -23,21 +31,26 @@ func main() {
 func indexHandler(w http.ResponseWriter, req *http.Request) {
 	requestLogger(req)
 
+	versionString := fmt.Sprintf("GoAPI - %s (%s) %s", version, gitHash, date)
 	hostname := getHostname()
+
 	redisAddr := os.Getenv("REDIS_HOST")
+
 	client := redisConnect(redisAddr)
 	defer client.Close()
+
 	hitCount := increment(client)
 
-	html := []byte(fmt.Sprintf("<h3>Hello from %s</h3>\n<p>Hit Count = %d</p>", hostname, hitCount))
+	html := []byte(fmt.Sprintf("<h3>Hello from %s</h3>\n<p>Hit Count = %d</p>\n\n<small>%s</small>", hostname, hitCount, versionString))
 	w.Header().Set("Content-Type", "text/html")
 	w.Write(html)
 }
 
 // data is simple struct used for JSON output of apiHandler
 type data struct {
-	Hostname string `json:"hostname,omitempty"`
-	Hitcount int    `json:"hitcount,omitempty"`
+	Hostname     string `json:"hostname,omitempty"`
+	Hitcount     int    `json:"hitcount,omitempty"`
+	RandomString string
 }
 
 // apiHandler returns JSON
@@ -53,11 +66,37 @@ func apiHandler(w http.ResponseWriter, req *http.Request) {
 	data := data{
 		hostname,
 		hitCount,
+		generateRandomString(),
 	}
 
 	js, err := json.Marshal(data)
 	if err != nil {
 		log.Println(err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
+// version
+type versionInfo struct {
+	Version   string
+	GitHash   string
+	BuildDate string
+}
+
+// versionHandler
+func versionHandler(w http.ResponseWriter, req *http.Request) {
+	requestLogger(req)
+	versionInfo := versionInfo{
+		version,
+		gitHash,
+		date,
+	}
+
+	js, err := json.Marshal(versionInfo)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -95,4 +134,14 @@ func getHostname() string {
 		log.Println(err)
 	}
 	return hostname
+}
+
+// generateRandomString generates a randomString... useless...comment...
+func generateRandomString() string {
+	letterBytes := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	b := make([]byte, 64)
+	for i := range b {
+		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	}
+	return string(b)
 }
