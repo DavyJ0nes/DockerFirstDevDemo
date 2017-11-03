@@ -10,7 +10,7 @@ import (
 
 // TestDataHandler checks that the data handler retrns 200
 func TestDataHandler(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(dataHandler))
+	ts := httptest.NewServer(http.HandlerFunc(apiHandler))
 	defer ts.Close()
 
 	res, err := http.Get(ts.URL)
@@ -25,12 +25,12 @@ func TestDataHandler(t *testing.T) {
 
 // TestHealthHandler checks that the data handler retrns 200
 func TestHealthHandler(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(healthHandler))
+	ts := httptest.NewServer(http.HandlerFunc(versionHandler))
 	defer ts.Close()
 
 	res, err := http.Get(ts.URL)
 	if err != nil {
-		t.Errorf("Error Getting Health: %s", err)
+		t.Errorf("Error Getting Version: %s", err)
 	}
 
 	if res.StatusCode != 200 {
@@ -42,17 +42,13 @@ func TestHealthHandler(t *testing.T) {
 		t.Errorf("Error Parsing Body: %s", err)
 	}
 
-	healthData := health{}
-	err = json.Unmarshal([]byte(body), &healthData)
+	versionInfo := versionInfo{}
+	err = json.Unmarshal([]byte(body), &versionInfo)
 	if err != nil {
 		t.Errorf("Error Parsing Body in JSON: %s", err)
 	}
 
-	if healthData.Status != 1 {
-		t.Errorf("Expected 1 | Got: %v", healthData.Status)
-	}
-
-	if healthData.Message != "A OK" {
-		t.Errorf("Expected 'A OK' | Got: %v", healthData.Message)
+	if versionInfo.Version != "No Version Provided" {
+		t.Errorf("Expected 1 | Got: %v", versionInfo.Version)
 	}
 }

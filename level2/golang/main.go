@@ -27,7 +27,7 @@ type data struct {
 	RandomString string
 }
 
-// dataHandler returns data for GET requests to /v1/data
+// apiHandler returns data for GET requests to /v1/data
 func apiHandler(w http.ResponseWriter, req *http.Request) {
 	requestLogger(req)
 	// versionString := fmt.Sprintf("GoAPI - %s (%s) %s", version, gitHash, date)
