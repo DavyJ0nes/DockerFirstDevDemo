@@ -15,13 +15,17 @@ def create_app():
         return response
 
     @app.errorhandler(404)
-    def fourohfourHandler(e):
+    def fourohfourHandler(err):
         response = jsonify({
             'Error': 'Page Not Found',
             'ErrorCode': 404
         })
         response.status_code = 404
         return response
+
+    @app.route('/health', methods=['GET'])
+    def healthHandler():
+        return 'ok'
 
     return app
 
