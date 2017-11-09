@@ -25,7 +25,7 @@ def create_app():
 
     @app.route('/health', methods=['GET'])
     def healthHandler():
-        return 'ok'
+        return 'a ok'
 
     return app
 

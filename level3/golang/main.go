@@ -9,6 +9,8 @@ import (
 	"os"
 
 	"github.com/mediocregopher/radix.v2/redis"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var (
@@ -17,12 +19,21 @@ var (
 	gitHash = ""
 )
 
+var requestCount = prometheus.NewCounter(prometheus.CounterOpts{
+	Name: "go_app_request_count_total",
+	Help: "Number of requests",
+})
+
 func main() {
+	prometheus.MustRegister(requestCount)
+
 	mux := http.NewServeMux()
 	mux.Handle("/favicon.ico", http.NotFoundHandler())
 	mux.HandleFunc("/", indexHandler)
 	mux.HandleFunc("/v1/data", apiHandler)
 	mux.HandleFunc("/v1/version", versionHandler)
+	mux.Handle("/metrics", promhttp.Handler())
+
 	log.Println("Starting Server")
 	log.Fatal(http.ListenAndServe(":3000", mux))
 }
@@ -123,6 +134,7 @@ func increment(client *redis.Client) int {
 
 // requestLogger is a helper function that prints request logging information.
 func requestLogger(req *http.Request) {
+	requestCount.Add(1)
 	log.Printf("%s | %s => %s", req.Method, req.RemoteAddr, req.URL.Path)
 }
 

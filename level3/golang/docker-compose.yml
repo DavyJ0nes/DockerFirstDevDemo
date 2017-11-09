@@ -1,7 +1,7 @@
 version: '3'
 services:
-  go-api:
-    image: go-redis
+  go_app:
+    image: davyj0nes/level3-goapp
     environment:
       - REDIS_HOST=redis:6379
     ports:
@@ -12,6 +12,28 @@ services:
     command: "redis-server --appendonly yes"
     volumes:
       - redis_store:/data
+
+  prometheus:
+    image: "quay.io/prometheus/prometheus"
+    ports:
+      - "9090:9090"
+    volumes:
+      - "./prometheus/etc/:/etc/prometheus/"
+
+  grafana:
+    image: "grafana/grafana"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=openup
+    ports:
+      - "3001:3000"
+    volumes:
+      - "./grafana/lib:/var/lib/grafana"
+      # - "./grafana/etc:/etc/grafana"
+
+  redis_metrics:
+    image: oliver006/redis_exporter
+    environment:
+      - REDIS_ADDR=redis:6379
 
 volumes:
   redis_store:
