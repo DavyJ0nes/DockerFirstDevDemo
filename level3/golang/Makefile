@@ -18,6 +18,13 @@ go_version ?= 1.9.2
 git_hash = $(shell git rev-parse HEAD | cut -c 1-6)
 build_date = $(shell date -u '+%Y-%m-%d_%I:%M:%S%p')
 
+run:
+	$(call blue, "# Running App...")
+	docker run -it --rm -v "$(GOPATH)":/go -v "$(CURDIR)/app":/go/src/app -p 8081:3000 -w /go/src/app golang:${go_version} go run main.go
+
+edit:
+	vi app/main.go
+
 binary:
 	$(call blue, "# Building Golang Binary...")
 	docker run --rm -v "$(CURDIR)/app":/go/src/app -w /go/src/app golang:${go_version} sh -c 'go get && CGO_ENABLED=0 GOOS=linux go build -a -tags netgo --installsuffix netgo --ldflags="-w -s -X main.version=${binary_version} -X main.gitHash=${git_hash} -X main.date=${build_date}" -o ${app_name}'
@@ -27,7 +34,7 @@ image: binary
 	docker build --label APP_VERSION=${binary_version} --label BUILT_ON=${build_date} --label GIT_HASH=${git_hash} -t ${username}/${app_name}:${version} app/
 	$(MAKE) clean
 
-run: image
+run_image: image
 	$(call blue, "# Running Docker Image Locally...")
 	docker run -it --rm --name ${app_name} -p ${local_port}:3000 ${username}/${app_name}:${version} 
 

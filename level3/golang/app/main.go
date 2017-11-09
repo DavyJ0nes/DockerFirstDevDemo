@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"math/rand"
@@ -41,19 +42,21 @@ func main() {
 // indexHandler is the root hander for the server
 func indexHandler(w http.ResponseWriter, req *http.Request) {
 	requestLogger(req)
+	w.Header().Set("Content-Type", "text/html")
 
 	versionString := fmt.Sprintf("GoAPI - %s (%s) %s", version, gitHash, date)
 	hostname := getHostname()
+	html := []byte(fmt.Sprintf("<h3>Hello from %s</h3>\n\n<small>version: %s</small>", hostname, versionString))
 
 	redisAddr := os.Getenv("REDIS_HOST")
 
-	client := redisConnect(redisAddr)
-	defer client.Close()
+	client, err := redisConnect(redisAddr)
+	if err == nil {
+		hitCount := increment(client)
+		html = []byte(fmt.Sprintf("<h3>Hola from %s</h3>\n<p>Hit Count = %d</p>\n\n<small>version: %s</small>", hostname, hitCount, versionString))
+		defer client.Close()
+	}
 
-	hitCount := increment(client)
-
-	html := []byte(fmt.Sprintf("<h3>Hello from %s</h3>\n<p>Hit Count = %d</p>\n\n<small>%s</small>", hostname, hitCount, versionString))
-	w.Header().Set("Content-Type", "text/html")
 	w.Write(html)
 }
 
@@ -67,12 +70,17 @@ type data struct {
 // apiHandler returns JSON
 func apiHandler(w http.ResponseWriter, req *http.Request) {
 	requestLogger(req)
+	w.Header().Set("Content-Type", "application/json")
 
 	hostname := getHostname()
+	hitCount := 0
 	redisAddr := os.Getenv("REDIS_HOST")
-	client := redisConnect(redisAddr)
-	defer client.Close()
-	hitCount := increment(client)
+
+	client, err := redisConnect(redisAddr)
+	if err == nil {
+		hitCount = increment(client)
+		defer client.Close()
+	}
 
 	data := data{
 		hostname,
@@ -85,7 +93,6 @@ func apiHandler(w http.ResponseWriter, req *http.Request) {
 		log.Println(err)
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	w.Write(js)
 }
 
@@ -115,12 +122,12 @@ func versionHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 // redisConnect connects to redis instance and returns client
-func redisConnect(redisHost string) *redis.Client {
+func redisConnect(redisHost string) (*redis.Client, error) {
 	client, err := redis.Dial("tcp", redisHost)
 	if err != nil {
-		log.Panicln("client |", err)
+		return client, errors.New("Cannot connect to Redis Server")
 	}
-	return client
+	return client, nil
 }
 
 // increment adds 1 to the hit counter in redis
