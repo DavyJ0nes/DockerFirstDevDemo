@@ -20,11 +20,11 @@ build_date = $(shell date -u '+%Y-%m-%d_%I:%M:%S%p')
 
 binary:
 	$(call blue, "# Building Golang Binary...")
-	docker run --rm -v "$(CURDIR)":/go/src/app -w /go/src/app golang:${go_version} sh -c 'go get && CGO_ENABLED=0 GOOS=linux go build -a -tags netgo --installsuffix netgo --ldflags="-w -s -X main.version=${binary_version} -X main.gitHash=${git_hash} -X main.date=${build_date}" -o ${app_name}'
+	docker run --rm -v "$(CURDIR)/app":/go/src/app -w /go/src/app golang:${go_version} sh -c 'go get && CGO_ENABLED=0 GOOS=linux go build -a -tags netgo --installsuffix netgo --ldflags="-w -s -X main.version=${binary_version} -X main.gitHash=${git_hash} -X main.date=${build_date}" -o ${app_name}'
 
 image: binary
 	$(call blue, "# Building Docker Image...")
-	docker build --label APP_VERSION=${binary_version} --label BUILT_ON=${build_date} --label GIT_HASH=${git_hash} -t ${username}/${app_name}:${version} .
+	docker build --label APP_VERSION=${binary_version} --label BUILT_ON=${build_date} --label GIT_HASH=${git_hash} -t ${username}/${app_name}:${version} app/
 	$(MAKE) clean
 
 run: image
@@ -33,7 +33,7 @@ run: image
 
 test:
 	$(call blue, "# Testing Golang Code...")
-	docker run --rm -it -v "$(GOPATH):/go" -v "$(CURDIR)":/go/src/app -w /go/src/app golang:${go_version} sh -c 'go test -v' 
+	docker run --rm -it -v "$(GOPATH):/go" -v "$(CURDIR)/app":/go/src/app -w /go/src/app golang:${go_version} sh -c 'go test -v' 
 
 start_stack: image
 	$(call blue, "# Starting Dev Stack...")
@@ -43,7 +43,7 @@ reload_stack: image
 	$(call blue, "# Reloading App...")
 
 clean: 
-	@rm -f ${app_name} 
+	@rm -f app/${app_name} 
 
 define blue
 	@tput setaf 4
