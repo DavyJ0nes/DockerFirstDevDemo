@@ -1,5 +1,6 @@
 version: '3'
 services:
+
   go_app:
     image: davyj0nes/level3-goapp
     environment:
