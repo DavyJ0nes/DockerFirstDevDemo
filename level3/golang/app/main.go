@@ -158,7 +158,7 @@ func getHostname() string {
 // generateRandomString generates a randomString... useless...comment...
 func generateRandomString() string {
 	letterBytes := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	b := make([]byte, 64)
+	b := make([]byte, 6)
 	for i := range b {
 		b[i] = letterBytes[rand.Intn(len(letterBytes))]
 	}
